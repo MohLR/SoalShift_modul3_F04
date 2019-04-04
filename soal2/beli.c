@@ -19,7 +19,7 @@ int addrlen = sizeof(address);
 char buffer[1024] = {0};
 char *pesan="Maaf permintaan tidak dapat diproses", *berhasil="Transaksi Berhasil", *gagal="Transaksi Gagal";
 int *stok;
-pthread_t tid[2];
+pthread_t tid;
 
 /* Dari https://www.linuxquestions.org/questions/programming-9/how-could-server-detect-closed-client-socket-using-tcp-and-c-824615/ */
 void* handler(void* arg){
@@ -105,13 +105,12 @@ int main(){
         	perror("accept");
         	exit(EXIT_FAILURE);
     	}else printf("Connection Established\n");
-	err=pthread_create(&(tid[1]),NULL,&handler,NULL);
+	err=pthread_create(&tid,NULL,&handler,NULL);
 	if(err!=0){
 		printf("\ncan't create thread: [%s]", strerror(err));
 		exit(EXIT_FAILURE);
 	}
-	pthread_join(tid[0],NULL);
-	pthread_join(tid[1],NULL);
+	pthread_join(tid,NULL);
 	shmdt(stok);
         shmctl(shmid, IPC_RMID, NULL);	
 	exit(EXIT_SUCCESS);
