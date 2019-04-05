@@ -134,6 +134,7 @@ void* printStok(void* arg){
 }
 ```
 ## Soal 3
+Saya masih belum bisa dan belum mengerti.
 
 ## Soal 4
 
