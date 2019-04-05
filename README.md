@@ -2,6 +2,61 @@
 Jawaban Soal Shift Sisop Modul 3
 
 ## Soal 1
+Pada soal 1, kita diminta untuk membuat program yang dapat ngeprint hasil dari faktorial yang kita input secara berurutan dari terkecil hingga terbesar. Sekarang kami akan menjelaskan potongan kodenya.
+
+	unsigned long long hasil[50];
+    	int n;
+
+    	pthread_t tid[50];
+
+	unsigned long long fact(int n){
+
+	if(n==0 || n==1)
+	return 1;
+	else 
+	return n*fact(n-1);
+	}
+	void *factorial(void *p){
+	int i;
+	int *x = (int*) p;
+	pthread_t id = pthread_self();
+	for (int i=0;i<n;i++) {
+		if (pthread_equal(id, tid[i]))
+		hasil[*x]=fact(*x);
+	}
+
+	pthread_exit(0);
+ 
+	}
+Disini kami membuat array yang menyimpan hasil, banyak angka, dan id thread. Lalu membuat fungsi untung menghitung faktorialnya secara rekursif.
+
+	int banding (const void * a, const void * b){ 
+	return ( *(int*)a - *(int*)b );
+	}
+Disini kami membuat fungsi untuk membandingkan inputnya.
+
+	int main(int argc, char *argv[])
+	{ 
+    		n = argc-1;
+    		int i;
+    		int ar[n];
+		for(i=0;i<n;i++){
+		ar[i] = atoi(argv[i+1]);
+		}
+
+    		for(i=0;i<n;i++){
+        		pthread_create(&tid[i],NULL,&factorial,&ar[i]);
+    		}
+    		for(i=0;i<n;i++){
+        		pthread_join(tid[i],NULL);
+    		}
+    		qsort(ar, n, sizeof(int), banding);
+    		for(i=0;i<n;i++){
+        	printf("%d! = %llu\n",ar[i],hasil[ar[i]]);
+    		}
+
+	}
+Pada main kami merubah inputan dikurang 1 karena variabel argc menyimpan banyaknya argumen beserta nama file. Lalu kami membuat agar string dirubah ke integer. Lalu membuat sebanyak input yang kita masuki lalu dijoinkan. Setelah itu disorting yang sudah dibandingkan pada fungsi banding. Lalu diprint.
 
 ## Soal 2
 Pada soal 2, kita diminta untuk membuat suatu server penjual dan pembeli yang hanya bisa diakses oleh satu client pada masing-masing server. server penjual dan pembeli saling berbagi resource yaitu stok. 
