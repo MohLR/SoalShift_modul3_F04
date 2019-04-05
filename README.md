@@ -6,7 +6,7 @@ Jawaban Soal Shift Sisop Modul 3
 ## Soal 2
 Pada soal 2, kita diminta untuk membuat suatu server penjual dan pembeli yang hanya bisa diakses oleh satu client pada masing-masing server. server penjual dan pembeli saling berbagi resource yaitu stok. 
 Kami membuat 4 program untuk memenuhi kebutuhan yaitu program server penjual, program server pembeli, program client penjual, dan program client pembeli. pada setiap program server, terdapat thread yang akan siap menerima sesuatu yang dikirim oleh client setiap saat, potongan kodenya dari server pembeli adalah
-``
+```
 void* handler(void* arg){
 	fd_set read_sd;
 	FD_ZERO(&read_sd);
@@ -54,9 +54,9 @@ void* handler(void* arg){
    	}
 	close(new_socket);
 }
-``
+```
 terdapat sedikit perbedaan dengan server penjual yaitu pada
-``
+```
 if (bytes > 0) {
   // got data from the client.
   if(!strcmp(buffer,"beli")){
@@ -67,17 +67,17 @@ if (bytes > 0) {
     }
   }else send(new_socket,pesan,strlen(pesan),0);
 }
-``
+```
 pada server penjual, hanya dilihat apakah yang dikirim adalah tambah, sedangkan pada server pembeli dilihat ketika yang dikirm adalah beli, maka dicek dulu stoknya, jika ada maka berhasil jika tidak maka gagal.
 Untuk server penjual, ada thread lain yang selalu men-print stok sekarang setiap 5 detik. Potongan kodenya adalah
-``
+```
 void* printStok(void* arg){
 	while(1){
 		printf("Stok Sekarang: %d\n", *stok);
 		sleep(5);
 	}
 }
-``
+```
 ## Soal 3
 
 ## Soal 4
