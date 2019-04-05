@@ -137,5 +137,227 @@ void* printStok(void* arg){
 Saya masih belum bisa dan belum mengerti.
 
 ## Soal 4
+Tidak tahu cara mengambil 10 list dari list process yang berjalan bersamaan
 
 ## Soal 5
+Pada soal 5, kita diminta membuat suatu game. game ini cukup sederhana yaitu terdapat 3 mode yaitu standby, battle, dan shop.
+pada standby mode; hunger,hygiene akan berkurang sedangkan health akan bertambah kami membuat tiga buat thread berbeda yang bekerja sendiri-sendiri.
+Berikut potongan codenya:
+```
+void* hungry(void* arg){
+	while(!over){
+		if(status==1){
+			sleep(10);
+			hunger-=5;
+			if(hunger<=0) over=1;
+		}
+	}
+}
+
+void* dirty(void* arg){
+	while(!over){
+		if(status==1){
+			sleep(30);
+			hygiene-=10;
+		}
+	}
+}
+
+void* regen(void* arg){
+	while(!over){
+		if(status==1){
+			sleep(10);
+			if(health+5>300) health=300;
+			else health+=5;
+		}
+	}
+}
+```
+untuk membuat terminal menerima input pada ketikan keyboard, kami mengubah mode dari terminal, hal ini ada pada suatu thread.
+Berikut potongan kodenya:
+```
+void* term(void* arg){
+	/*Mulai code copas dari https://stackoverflow.com/questions/1798511/how-to-avoid-pressing-enter-with-getchar*/
+	static struct termios oldt, newt;
+
+  /*tcgetattr gets the parameters of the current terminal
+  STDIN_FILENO will tell tcgetattr that it should write the settings
+  of stdin to oldt*/
+  tcgetattr( STDIN_FILENO, &oldt);
+  /*now the settings will be copied*/
+  newt = oldt;
+
+  /*ICANON normally takes care that one line at a time will be processed
+  that means it will return if it sees a "\n" or an EOF or an EOL*/
+  newt.c_lflag &= ~(ICANON | ECHO);
+
+  /*Those new settings will be set to STDIN
+  TCSANOW tells tcsetattr to change attributes immediately. */
+  tcsetattr( STDIN_FILENO, TCSANOW, &newt);
+	/*Akhir code copas*/
+	while(!over){
+	}
+	system("clear");
+	printf("Permainan berakhir.\n");
+	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+}
+```
+Lalu ada thread yang menunggu input tersendiri. kodenya adalah
+```
+void* input(void* arg){
+	while(!over){
+		if(status==1){
+			monster=100;
+			time_t current=time(&current);
+			int c=getchar();
+			switch (c) {
+				case '1':
+					if (makanan>0) {
+						makanan-=1;
+						if(hunger+15>200) hunger=200;
+						else hunger+=15;
+					}
+					break;
+				case '2':
+					if (bath==0||current-bath>=20) {
+						bath=current;
+						if (hygiene+30>100) hygiene=100;
+						else hygiene+=30;
+					}
+					break;
+				case '3':
+					status-=1;
+					break;
+				case '4':
+					status+=1;
+					break;
+				case '5':
+					over=1;
+					break;
+				default:
+					break;
+			}
+		}else if (status==0) {
+			int c=getchar();
+			if(c=='1'){
+				system("clear");
+				printf("You attacked!\nThe enemy took 20 damage.\n");
+				monster-=20;
+				if(monster<=0) {
+					printf("The enemy died.\n");
+					status+=1;
+				}
+				else {
+					printf("The enemy attacked!\nYou took 20 damage.\n");
+					health-=20;
+					if(health<=0){
+						printf("You died.\n");
+						over=1;
+					}
+				}
+			} else if(c=='2'){
+				system("clear");
+				printf("Succesfully fled.\n");
+				status+=1;
+			}
+		}else{
+			int c=getchar();
+			if(c=='1'&&(*stok>0)){
+				makanan+=1;
+				*stok-=1;
+			} else if(c=='1'&&(*stok<=0)){
+				system("clear");
+				printf("Shop's stock is empty\n");
+			}else if(c=='2'){
+				system("clear");
+				printf("You left the shop\n");
+				status-=1;
+			}
+		}
+	}
+}
+```
+setelah itu ada thread tersendiri lagi untuk display. kodenya adalah:
+```
+void* display(void* arg){
+	while (!over) {
+		time_t current=time(&current);
+		if (status==1) {
+			/* standby */
+			system("clear");
+			printf("Standby Mode\nHealth : %d\nHunger : %d\nHygiene : %d\nFood left : %d\n", health,hunger,hygiene,makanan);
+			if(bath==0||current-bath>=20){
+				printf("Bath is ready\n");
+			} else{
+				printf("Bath will be ready in %lds\n",20-(current-bath));
+			}
+			printf("Choices\n1. Eat\n2. Bath\n3. Battle\n4. Shop\n5. Exit\n");
+		} else if (status==0) {
+			/*battle*/
+			system("clear");
+			printf("Battle Mode\nMonster's Health :%d\nEnemy's Health :%d\nChoices\n1. Attack\n2. Run\n", health,monster);
+		} else {
+			/* shop */
+			system("clear");
+			printf("Shop Mode\nShop food stock : %d\nYour food stock : %d\nChoices\n1. Buy\n2. Back\n", *stok,makanan);
+		}
+		sleep(1);
+	}
+}
+```
+
+Terdapat program penjual juga untuk menyetok makanan pada toko. Pada programnya, kami membuat tiga thread berbeda yaitu:
+
+Untuk mengganti terminal:
+```
+void* term(void* arg){
+	/*Mulai code copas dari https://stackoverflow.com/questions/1798511/how-to-avoid-pressing-enter-with-getchar*/
+	static struct termios oldt, newt;
+
+  /*tcgetattr gets the parameters of the current terminal
+  STDIN_FILENO will tell tcgetattr that it should write the settings
+  of stdin to oldt*/
+  tcgetattr( STDIN_FILENO, &oldt);
+  /*now the settings will be copied*/
+  newt = oldt;
+
+  /*ICANON normally takes care that one line at a time will be processed
+  that means it will return if it sees a "\n" or an EOF or an EOL*/
+  newt.c_lflag &= ~(ICANON | ECHO);
+
+  /*Those new settings will be set to STDIN
+  TCSANOW tells tcsetattr to change attributes immediately. */
+  tcsetattr( STDIN_FILENO, TCSANOW, &newt);
+	/*Akhir code copas*/
+	while(!over){
+	}
+  system("clear");
+  printf("You left the shop\n");
+	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+}
+```
+Untuk menerima input:
+```
+void* input(void* arg){
+  while (!over) {
+    int c=getchar();
+    if(c=='1'){
+      *stok+=1;
+      system("clear");
+      printf("Restocked.\n");
+    }else if(c=='2'){
+      over=1;
+    }
+  }
+}
+```
+Untuk mendisplay:
+```
+void* display(void* arg){
+  while (!over) {
+    system("clear");
+    printf("Shop\nFood stock : %d\nChoices\n1. Restock\n2. Exit\n",*stok);
+    sleep(1);
+  }
+}
+```
